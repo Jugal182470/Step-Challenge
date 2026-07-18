@@ -15,7 +15,8 @@ body{margin:0;font-family:Inter,Segoe UI,sans-serif;background:radial-gradient(c
 .header h1{font-size:3rem;margin:0}
 .grid{display:grid;gap:20px}
 .grid-3{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
-.grid-2{grid-template-columns:2fr 1fr}
+/* Updated to be stacked instead of side-by-side */
+.grid-stacked{display:grid;gap:20px;grid-template-columns:1fr}
 .metric{font-size:1.5rem;font-weight:800}
 .podium{display:flex;align-items:flex-end;justify-content:center;height:260px;margin-top:15px;}
 .place{width:120px;text-align:center;border-radius:20px 20px 0 0;padding:15px;margin:0 8px;font-weight:700;}
@@ -25,7 +26,7 @@ body{margin:0;font-family:Inter,Segoe UI,sans-serif;background:radial-gradient(c
 table{width:100%;border-collapse:collapse}
 th,td{padding:12px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)}
 .badge{display:inline-block;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.12);margin:5px;}
-canvas{background:white;border-radius:16px;padding:10px}
+canvas{background:white;border-radius:16px;padding:10px;max-width:100%}
 select{width:100%;padding:12px;border-radius:8px;background:#1e293b;color:white;border:1px solid var(--border);font-size:1rem;margin-top:10px}
 </style>
 </head>
@@ -45,9 +46,10 @@ select{width:100%;padding:12px;border-radius:8px;background:#1e293b;color:white;
 
     <div class="glass" style="margin-top:20px"><h2>🥇🏅 Podium</h2><div id="podium" class="podium"></div></div>
 
-    <div class="grid grid-2" style="margin-top:20px">
-        <div class="glass"><h2>📈 Points Evolution</h2><canvas id="pointsChart"></canvas></div>
+    <!-- Stacked Sections -->
+    <div class="grid-stacked" style="margin-top:20px">
         <div class="glass"><h2>📊 Detailed Statistics</h2><div id="stats"></div></div>
+        <div class="glass"><h2>📈 Points Evolution</h2><canvas id="pointsChart"></canvas></div>
     </div>
 
     <div class="glass" style="margin-top:20px"><h2>🏆 Leaderboard</h2><table id="leaderboard"></table></div>
@@ -152,7 +154,7 @@ function render() {
     document.getElementById("stats").innerHTML = `
         <p><b>Highest Day:</b> ${maxDay?.name} (${maxDay?.steps.toLocaleString()} on ${maxDay?.date})</p>
         <p><b>Lowest Day:</b> ${minDay?.name} (${minDay?.steps.toLocaleString()} on ${minDay?.date})</p>
-        <hr>${db.friends.map(f => `<p><b>${f}</b>: ${totals[f].toLocaleString()} steps</p>`).join("")}`;
+        <hr>${db.friends.map(f => `<p><b>${f}</b>: ${totals[f].toLocaleString()} total steps</p>`).join("")}`;
 
     const sorted = Object.entries(points).sort((a,b) => b[1] - a[1]);
     document.getElementById("leaderboard").innerHTML = "<tr><th>Rank</th><th>Name</th><th>Points</th><th>Wins</th></tr>" + 
