@@ -15,7 +15,6 @@ body{margin:0;font-family:Inter,Segoe UI,sans-serif;background:radial-gradient(c
 .header h1{font-size:3rem;margin:0}
 .grid{display:grid;gap:20px}
 .grid-3{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
-/* Updated to be stacked instead of side-by-side */
 .grid-stacked{display:grid;gap:20px;grid-template-columns:1fr}
 .metric{font-size:1.5rem;font-weight:800}
 .podium{display:flex;align-items:flex-end;justify-content:center;height:260px;margin-top:15px;}
@@ -46,7 +45,6 @@ select{width:100%;padding:12px;border-radius:8px;background:#1e293b;color:white;
 
     <div class="glass" style="margin-top:20px"><h2>🥇🏅 Podium</h2><div id="podium" class="podium"></div></div>
 
-    <!-- Stacked Sections -->
     <div class="grid-stacked" style="margin-top:20px">
         <div class="glass"><h2>📊 Detailed Statistics</h2><div id="stats"></div></div>
         <div class="glass"><h2>📈 Points Evolution</h2><canvas id="pointsChart"></canvas></div>
@@ -104,9 +102,13 @@ async function loadDataFromSheet() {
             const [m1, y1] = a.split('-'), [m2, y2] = b.split('-');
             return new Date(y1, m1-1) - new Date(y2, m2-1);
         });
+        
         select.innerHTML = '<option value="all">All Time</option>' + periods.map((p, i) => {
             const [m, y] = p.split('-').map(Number);
-            return `<option value="${p}">Month ${i+1} (${m}/11/${y} to ${m%12+1}/10/${m===12?y+1:y})</option>`;
+            const startM = m.toString().padStart(2, '0');
+            const endM = (m % 12 + 1).toString().padStart(2, '0');
+            const endY = (m === 12 ? y + 1 : y);
+            return `<option value="${p}">Month ${i+1} (11/${startM}/${y} to 10/${endM}/${endY})</option>`;
         }).join("");
         render();
     } catch (e) { document.getElementById("friends").innerHTML = "Error loading data."; }
