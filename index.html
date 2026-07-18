@@ -6,255 +6,172 @@
 <title>Ultimate Steps League</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root{
---bg:#070b16;
---card:rgba(255,255,255,.08);
---border:rgba(255,255,255,.15);
---text:#f8fafc;
---gold:#ffd700;
-}
+:root{--bg:#070b16;--card:rgba(255,255,255,.08);--border:rgba(255,255,255,.15);--text:#f8fafc;--gold:#ffd700;}
 *{box-sizing:border-box}
-body{
-margin:0;
-font-family:Inter,Segoe UI,sans-serif;
-background:radial-gradient(circle at top,#172554,#070b16 50%);
-color:var(--text);
-padding:20px;
-}
+body{margin:0;font-family:Inter,Segoe UI,sans-serif;background:radial-gradient(circle at top,#172554,#070b16 50%);color:var(--text);padding:20px;}
 .container{max-width:1500px;margin:auto}
-.glass{
-background:var(--card);
-backdrop-filter:blur(18px);
-border:1px solid var(--border);
-border-radius:24px;
-padding:20px;
-box-shadow:0 10px 40px rgba(0,0,0,.35);
-}
+.glass{background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--border);border-radius:24px;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.35);}
 .header{text-align:center;margin-bottom:20px}
 .header h1{font-size:3rem;margin:0}
 .grid{display:grid;gap:20px}
 .grid-3{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
 .grid-2{grid-template-columns:2fr 1fr}
-.metric{font-size:2rem;font-weight:800}
-.podium{
-display:flex;align-items:flex-end;justify-content:center;
-height:260px;margin-top:15px;
-}
-.place{
-width:120px;text-align:center;border-radius:20px 20px 0 0;
-padding:15px;
-margin:0 8px;
-font-weight:700;
-}
+.metric{font-size:1.5rem;font-weight:800}
+.podium{display:flex;align-items:flex-end;justify-content:center;height:260px;margin-top:15px;}
+.place{width:120px;text-align:center;border-radius:20px 20px 0 0;padding:15px;margin:0 8px;font-weight:700;}
 .first{height:220px;background:linear-gradient(#ffd700,#f59e0b);color:#000}
 .second{height:170px;background:linear-gradient(#e5e7eb,#9ca3af);color:#000}
 .third{height:130px;background:linear-gradient(#d97706,#92400e)}
 table{width:100%;border-collapse:collapse}
 th,td{padding:12px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)}
-.badge{
-display:inline-block;padding:6px 12px;border-radius99px;
-background:rgba(255,255,255,.12);margin:5px;
-}
-.section-title{margin-top:0}
+.badge{display:inline-block;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.12);margin:5px;}
 canvas{background:white;border-radius:16px;padding:10px}
-.streak{font-size:1.3rem}
-.loading-msg {font-size:1.2rem; text-align:center; padding:10px;}
+select{width:100%;padding:12px;border-radius:8px;background:#1e293b;color:white;border:1px solid var(--border);font-size:1rem;margin-top:10px}
 </style>
 </head>
 <body>
 <div class="container">
+    <div class="glass header"><h1>🏆 Ultimate Steps League</h1></div>
 
-<div class="glass header">
-<h1>🏆 Ultimate Steps League</h1>
-<p>Premium Fitness Competition Dashboard</p>
-</div>
+    <div class="glass" style="margin-bottom:20px;">
+        <label for="monthFilter" style="font-weight:bold;">Filter by Challenge Period:</label>
+        <select id="monthFilter" onchange="render()"></select>
+    </div>
 
-<div class="grid grid-3">
-<div class="glass">
-<h2 class="section-title">👥 Friends</h2>
-<div id="friends"><div class="loading-msg">Loading...</div></div>
-</div>
+    <div class="grid grid-3">
+        <div class="glass"><h2>👥 Friends</h2><div id="friends">Loading...</div></div>
+        <div class="glass"><h2>🔥 Longest Winning Streak</h2><div id="streak" class="metric">-</div></div>
+    </div>
 
-<div class="glass">
-<h2 class="section-title">🔥 Longest Winning Streak</h2>
-<div id="streak" class="metric">-</div>
-</div>
-</div>
+    <div class="glass" style="margin-top:20px"><h2>🥇🏅 Podium</h2><div id="podium" class="podium"></div></div>
 
-<div class="glass" style="margin-top:20px">
-<h2>🥇🏅 Animated Podium</h2>
-<div id="podium" class="podium"></div>
-</div>
+    <div class="grid grid-2" style="margin-top:20px">
+        <div class="glass"><h2>📈 Points Evolution</h2><canvas id="pointsChart"></canvas></div>
+        <div class="glass"><h2>📊 Detailed Statistics</h2><div id="stats"></div></div>
+    </div>
 
-<div class="grid grid-2" style="margin-top:20px">
-<div class="glass">
-<h2>📈 Points Evolution</h2>
-<canvas id="pointsChart"></canvas>
-</div>
-
-<div class="glass">
-<h2>📊 Statistics</h2>
-<div id="stats"></div>
-</div>
-</div>
-
-<div class="glass" style="margin-top:20px">
-<h2>🏆 Leaderboard</h2>
-<table id="leaderboard"></table>
-</div>
-
-<div class="glass" style="margin-top:20px">
-<h2>📜 History</h2>
-<div id="history"></div>
-</div>
-
+    <div class="glass" style="margin-top:20px"><h2>🏆 Leaderboard</h2><table id="leaderboard"></table></div>
+    <div class="glass" style="margin-top:20px"><h2>📜 History</h2><div id="history" style="overflow-x:auto"></div></div>
 </div>
 
 <script>
-// Base database structure that will be populated via Google Sheet
 let db = { friends: [], days: [] };
 let chart;
 
-// Helper function to parse CSV lines safely (handling strings with potential quotes)
 function parseCSV(text) {
-    let lines = text.split(/\r?\n/);
-    return lines.filter(line => line.trim() !== "").map(line => {
-        let result = [];
-        let current = '';
-        let inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-            let char = line[i];
-            if (char === '"') {
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                result.push(current.trim().replace(/^"|"$/g, ''));
-                current = '';
-            } else {
-                current += char;
-            }
+    return text.split(/\r?\n/).filter(line => line.trim() !== "").map(line => {
+        let result = [], current = '', inQuotes = false;
+        for (let char of line) {
+            if (char === '"') inQuotes = !inQuotes;
+            else if (char === ',' && !inQuotes) { result.push(current.trim().replace(/^"|"$/g, '')); current = ''; }
+            else current += char;
         }
         result.push(current.trim().replace(/^"|"$/g, ''));
         return result;
     });
 }
 
-// Fetch data from the Google Sheet URL provided
+function parseDate(dateStr) {
+    const [d, m, y] = dateStr.trim().split(/[\/\-]/).map(Number);
+    return new Date(y, m - 1, d);
+}
+
+function getPeriod(dateStr) {
+    const [d, m, y] = dateStr.trim().split(/[\/\-]/).map(Number);
+    let periodMonth = (d >= 11) ? m : (m === 1 ? 12 : m - 1);
+    let periodYear = (m === 1 && d < 11) ? y - 1 : y;
+    return { month: periodMonth, year: periodYear, day: d, key: `${periodMonth}-${periodYear}` };
+}
+
 async function loadDataFromSheet() {
     const url = "https://docs.google.com/spreadsheets/d/1YZO9Mor9zh72b1rHET_edkwPOCplHVM72V4i4aTx7R8/gviz/tq?tqx=out:csv";
     try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Network response was not ok");
-        const csvText = await response.text();
-        
-        const rows = parseCSV(csvText);
-        if (rows.length < 1) return;
+        const rows = parseCSV(await response.text());
+        db.friends = rows[0].slice(1);
+        db.days = rows.slice(1).map(row => {
+            const dateData = getPeriod(row[0]);
+            return { 
+                date: row[0], dateObj: parseDate(row[0]), day: dateData.day, period: dateData.key, 
+                steps: db.friends.reduce((acc, f, i) => ({...acc, [f]: parseInt(row[i+1]?.replace(/,/g,'') || 0, 10)}), {}) 
+            };
+        });
 
-        // Header row defines the structure: [ "Date", "Friend 1", "Friend 2", ... ]
-        const headers = rows[0];
-        const friendsList = headers.slice(1); // All columns except the first one (Date)
-        
-        db.friends = friendsList;
-        db.days = [];
-
-        // Parse remaining data rows
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            if (!row[0]) continue; // Skip empty rows
-            
-            let date = row[0];
-            let steps = {};
-            
-            friendsList.forEach((friend, index) => {
-                // Column offset is index + 1 because column 0 is Date
-                let val = row[index + 1];
-                steps[friend] = val ? parseInt(val.replace(/,/g, ''), 10) || 0 : 0;
-            });
-            
-            db.days.push({ date, steps });
-        }
-
+        const select = document.getElementById("monthFilter");
+        const periods = [...new Set(db.days.map(d => d.period))].sort((a,b) => {
+            const [m1, y1] = a.split('-'), [m2, y2] = b.split('-');
+            return new Date(y1, m1-1) - new Date(y2, m2-1);
+        });
+        select.innerHTML = '<option value="all">All Time</option>' + periods.map((p, i) => {
+            const [m, y] = p.split('-').map(Number);
+            return `<option value="${p}">Month ${i+1} (${m}/11/${y} to ${m%12+1}/10/${m===12?y+1:y})</option>`;
+        }).join("");
         render();
-    } catch (error) {
-        console.error("Error fetching data from Google Sheet:", error);
-        document.getElementById("friends").innerHTML = `<span style="color:red">Error loading live data.</span>`;
+    } catch (e) { document.getElementById("friends").innerHTML = "Error loading data."; }
+}
+
+function render() {
+    const filter = document.getElementById("monthFilter").value;
+    const filteredDays = filter === "all" ? db.days : db.days.filter(d => d.period === filter);
+    filteredDays.sort((a, b) => a.dateObj - b.dateObj);
+
+    document.getElementById("friends").innerHTML = db.friends.map(f => `<span class="badge">${f}</span>`).join("");
+
+    let points = {}, wins = {}, totals = {}, allEntries = [];
+    db.friends.forEach(f => { points[f] = 0; wins[f] = 0; totals[f] = 0; });
+
+    filteredDays.forEach(day => {
+        Object.entries(day.steps).forEach(([n, s]) => {
+            totals[n] += s;
+            allEntries.push({name: n, steps: s, date: day.date});
+        });
+        let rank = Object.entries(day.steps).sort((a,b) => b[1] - a[1]);
+        if(rank[0]) { points[rank[0][0]] += 2; wins[rank[0][0]]++; }
+        if(rank[1]) points[rank[1][0]] += 1;
+    });
+
+    if (filter !== "all" && filteredDays.some(d => d.day === 10)) {
+        let bestAggregator = Object.entries(totals).sort((a,b) => b[1] - a[1])[0];
+        if (bestAggregator) points[bestAggregator[0]] += 5;
     }
+
+    let maxStreak = 0, streakWinner = "-";
+    db.friends.forEach(f => {
+        let s = 0, currentMax = 0;
+        filteredDays.forEach(day => {
+            let rank = Object.entries(day.steps).sort((a,b) => b[1] - a[1]);
+            if(rank[0] && rank[0][0] === f) { s++; currentMax = Math.max(currentMax, s); }
+            else { s = 0; }
+        });
+        if(currentMax > maxStreak) { maxStreak = currentMax; streakWinner = f; }
+    });
+    document.getElementById("streak").innerHTML = `${streakWinner} (${maxStreak} days)`;
+
+    const sortedEntries = allEntries.sort((a,b) => b.steps - a.steps);
+    const maxDay = sortedEntries[0], minDay = sortedEntries[sortedEntries.length - 1];
+    document.getElementById("stats").innerHTML = `
+        <p><b>Highest Day:</b> ${maxDay?.name} (${maxDay?.steps.toLocaleString()} on ${maxDay?.date})</p>
+        <p><b>Lowest Day:</b> ${minDay?.name} (${minDay?.steps.toLocaleString()} on ${minDay?.date})</p>
+        <hr>${db.friends.map(f => `<p><b>${f}</b>: ${totals[f].toLocaleString()} steps</p>`).join("")}`;
+
+    const sorted = Object.entries(points).sort((a,b) => b[1] - a[1]);
+    document.getElementById("leaderboard").innerHTML = "<tr><th>Rank</th><th>Name</th><th>Points</th><th>Wins</th></tr>" + 
+        sorted.map((r,i) => `<tr><td>${["🥇","🥈","🥉"][i]||i+1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${wins[r[0]]}</td></tr>`).join("");
+    document.getElementById("podium").innerHTML = `
+        <div class="place second">🥈<br>${sorted[1]?.[0]||"-"}<br>${sorted[1]?.[1]||0}</div>
+        <div class="place first">👑<br>${sorted[0]?.[0]||"-"}<br>${sorted[0]?.[1]||0}</div>
+        <div class="place third">🥉<br>${sorted[2]?.[0]||"-"}<br>${sorted[2]?.[1]||0}</div>`;
+
+    let hist = "<table><tr><th>Date</th>" + db.friends.map(f => `<th>${f}</th>`).join("") + "</tr>";
+    filteredDays.forEach(day => {
+        hist += `<tr><td>${day.date}</td>` + db.friends.map(f => `<td>${day.steps[f]}</td>`).join("") + "</tr>";
+    });
+    document.getElementById("history").innerHTML = hist + "</table>";
+
+    if(chart) chart.destroy();
+    chart = new Chart(document.getElementById("pointsChart"), { type: "doughnut", data: { labels: Object.keys(points), datasets: [{ data: Object.values(points) }] } });
 }
 
-function render(){
-document.getElementById("friends").innerHTML=
-db.friends.map(f=>`<span class="badge">${f}</span>`).join("");
-
-let points={},wins={},totals={};
-db.friends.forEach(f=>{
-points[f]=0;
-wins[f]=0;
-totals[f]=0;
-});
-
-db.days.forEach(day=>{
-Object.entries(day.steps).forEach(([n,s])=>totals[n]+=s);
-
-let rank=Object.entries(day.steps).sort((a,b)=>b[1]-a[1]);
-
-if(rank[0]){points[rank[0][0]]+=2;wins[rank[0][0]]++;}
-if(rank[1]) points[rank[1][0]]+=1;
-});
-
-let sorted=Object.entries(points).sort((a,b)=>b[1]-a[1]);
-
-let lb="<tr><th>Rank</th><th>Name</th><th>Points</th><th>Wins</th></tr>";
-sorted.forEach((r,i)=>{
-lb+=`<tr><td>${["🥇","🥈","🥉"][i]||i+1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${wins[r[0]]}</td></tr>`;
-});
-document.getElementById("leaderboard").innerHTML=lb;
-
-let p=sorted.slice(0,3);
-
-document.getElementById("podium").innerHTML=`
-<div class="place second">🥈<br>${p[1]?.[0]||"-"}<br>${p[1]?.[1]||0}</div>
-<div class="place first">👑<br>${p[0]?.[0]||"-"}<br>${p[0]?.[1]||0}</div>
-<div class="place third">🥉<br>${p[2]?.[0]||"-"}<br>${p[2]?.[1]||0}</div>`;
-
-let topStreak="-",max=0;
-for(let f of db.friends){
-let s=0,m=0;
-db.days.sort((a,b)=>a.date.localeCompare(b.date)).forEach(day=>{
-let rank=Object.entries(day.steps).sort((a,b)=>b[1]-a[1]);
-if(rank[0] && rank[0][0]===f){s++;m=Math.max(m,s)}
-else s=0;
-});
-if(m>max){max=m;topStreak=f+" ("+m+" days)";}
-}
-document.getElementById("streak").innerHTML=topStreak;
-
-document.getElementById("stats").innerHTML=Object.keys(totals).map(f=>
-`<p><b>${f}</b><br>Total Steps: ${totals[f].toLocaleString()}<br>Wins: ${wins[f]}</p>`
-).join("");
-
-if(chart)chart.destroy();
-chart=new Chart(document.getElementById("pointsChart"),{
-type:"doughnut",
-data:{
-labels:Object.keys(points),
-datasets:[{data:Object.values(points)}]
-}
-});
-
-let hist="<table><tr><th>Date</th>";
-db.friends.forEach(f=>hist+=`<th>${f}</th>`);
-hist+="</tr>";
-
-db.days.sort((a,b)=>a.date.localeCompare(b.date)).forEach(day=>{
-hist+=`<tr><td>${day.date}</td>`;
-db.friends.forEach(f=>hist+=`<td>${day.steps[f]||0}</td>`);
-hist+=`</tr>`;
-});
-
-hist+="</table>";
-document.getElementById("history").innerHTML=hist;
-}
-
-// Initial pull on window mount
 loadDataFromSheet();
 </script>
 </body>
